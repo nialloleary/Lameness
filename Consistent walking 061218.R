@@ -1,8 +1,8 @@
 #Load all  data correctly - data munging done 
 #cow eleven different- figure it out
-#Line 80 or so Matching results file SN number or something
+#Line 80 or so Matching results file SN number 
 #Check cor sumtable - seems to populate all score columns even with only one cow with one score
-#Edit for commit
+
 #Check loco_index - which column score is in
 #Results all the same data
 
