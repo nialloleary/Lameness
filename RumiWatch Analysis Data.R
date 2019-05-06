@@ -1,8 +1,17 @@
 #Tasks to do
+# Normal step - graph 
+# ggplot - so we want the steps df from the list
+#currently only a small window
+#Long table - 45248 steps from every cow and lse
+#change from LSE to trial a & B
+
 #Summary table
-#Stride duration - has zeros - need to assign NA's to zeros biasing down - After RW convert brought in - assign NA's to 0's and follow the errors.
+#Stride duration - has zeros - need to assign NA's to zeros biasing down - After RW convert brought in - assign NA's to 0's and follow the errors
+
 #So in the jersey hourly summaries- stride distance appears reasonable 
 #Look for other hourly summaries
+
+
 # OVERVIEW
 #This script: ##populates a meta table with information about the multiple locomotion scoring events 
 ##lists are initialised to store 
@@ -19,7 +28,7 @@
 
 #Package loading & Define Functions & set constants-----------
 {{ # 467
-  home<- "D:/Lameness" # locoation of Lameness file on your computer - data available from Nialloleary@gmail.com
+  home<- "D:/RW_Acceleration_And_Behavior_Converted" # locoation of Lameness file on your computer - data available from Nialloleary@gmail.com
   library(magrittr);library(dplyr); library(data.table); library(RcppRoll);  library(tibble);library(purrr);library(zoo);
   
   #Function mean and Standard deviation combined 
@@ -31,8 +40,7 @@
   Records <- 600 # To be examined in the consistent walking analysis 60 seconds, 1 minute
   side<-Records/2 # when centred time before and after
   
-  
-  #This Meta table contains the meta data for locomotion scoring event required to run the script. This facilitate same script being applied to each data set. Only these variables should change between locmotion scoring events. The Selected row corresponds to the locomotion scoring event (lse). In the script, then the item from that row is called. 
+#This Meta table contains the meta data for locomotion scoring event required to run the script. This facilitate same script being applied to each data set. Only these variables should change between locmotion scoring events. The Selected row corresponds to the locomotion scoring event (lse). In the script, then the item from that row is called. 
   
   MVars<-c("Raw_Path", #Meta variables
            "Start","Stop", "Feature_Y_N", "Skip", "WATCHSTART","Feature path","Ref_File","Scores" ,"Score_Var","Loco_Index1","ExcludedCows","ExcludedCows2","ExcludedCows3","ExcludedCows4","ExcludedCows5","ExcludedCows6","ExcludedCows7","24hr1hr"
@@ -899,6 +907,40 @@ DFCor<- as.data.frame(as.matrix(cor(LongDF)))
 DFCor$Scale<-as.numeric(sqrt((DFCor[,53])^2))
 DFCor2<- DFCor[,c(53,ncol(DFCor))]
 LongCor<-rownames_to_column(DFCor2)
+
+#Typical step----
+library(ggplot2); 
+#So we have 11,000 row of nonlame, and 15000 lame steps.
+# So I could do standard deviation for each row
+
+LongNonLame<-long[long$loco=="0",]
+LNLm<-colMeans(LongNonLame[,c(16:7,2,17:20),])
+LNLindex<-c(-10:4)
+LNLv<-apply(LongNonLame[,c(16:7,2,17:20)],2,FUN = var)
+LNL<-cbind.data.frame(LNLm,LNLv,LNLindex)
+
+ggplot(data = LNL, aes(x=LNLindex,
+                       y=+  geom_line() +
+         geom_errorbar(aes(ymin=LNLm-(LNLv/2), 
+                   ymax=LNLm+(LNLv/2)))))
+
+
+#Lame ----
+LongLame<-long[long$loco=="2",]
+
+LLm<-colMeans(LongLame[,c(16:7,2,17:20),])
+LLindex<-c(-10:4)
+LLv<-apply(LongLame[,c(16:7,2,17:20)],2,FUN = var)
+
+LL<-cbind.data.frame(LLm,LLv,LLindex)
+
+ggplot(data = LL, aes(x=LLindex,
+                       y=LLm))+ 
+  geom_line() 
+
+  geom_errorbar(aes(ymin=(LLm-(LLv/2)), 
+                    ymax=(LLm+(LLv/2)), 
+                    width=.2,                                    position=position_dodge(0.05)))
 
 
 
