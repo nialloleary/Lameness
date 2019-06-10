@@ -2,33 +2,21 @@
 # Normal step - graph 
 # Ggplot - so we want the steps df from the list
 #currently only a small window
-#Long table - 45248 steps from every cow and lse
-#change from LSE to trial a & B
-
-#Summary table
-#Stride duration - has zeros - need to assign NA's to zeros biasing down - After RW convert brought in - assign NA's to 0's and follow the errors
 
 #So in the jersey hourly summaries- stride distance appears reasonable 
 #Look for other hourly summaries
 
-
 # OVERVIEW
 #This script: ##populates a meta table with information about the multiple locomotion scoring events 
 ##lists are initialised to store 
-###records for individual steps (long), 
 ### the correlation matrix for each experiment, and 
 ###summary table for each experiment, 
-#A loop (duration ~13 minutes) then starts loading data from these experiments
-##Within this is a loop both the raw data and Rumi Watch software converted data is loaded, processed (detailed explaination there) and ##Adds them to the long list (individual steps), the cor list (per locomotin scoring event) and sumtable (list of summary tables from each locomotin scoring event)
 
 #For loop characters
-#i = individual cows in a locomotin scoring event
 # lse = locomotin scoring event/ experiment number
-#h is for cycling through records around strike point in gait analysis
-
 #Package loading & Define Functions & set constants-----------
-{{ # 467
-  home<- "D:/RW_Acceleration_And_Behavior_Converted" # locoation of Lameness file on your computer - data available from Nialloleary@gmail.com
+{{ #
+  home<- "C:/Lameness/LamenessPublicData/RW_Acceleration_and_Behavior" # locoation of Lameness file on your computer - data available from Nialloleary@gmail.com
   library(magrittr);library(dplyr); library(data.table); library(RcppRoll);  library(tibble);library(purrr);library(zoo);
   
   #Function mean and Standard deviation combined 
@@ -36,10 +24,7 @@
   SEM <- function(x) sd(x)/sqrt(length(x))
   options(scipen=99,digits=3)
   #Constants
-  Recs_per_Day<-24*60*60*10# records per day
-  Records <- 600 # To be examined in the consistent walking analysis 60 seconds, 1 minute
-  side<-Records/2 # when centred time before and after
-  
+
 #This Meta table contains the meta data for locomotion scoring event required to run the script. This facilitate same script being applied to each data set. Only these variables should change between locmotion scoring events. The Selected row corresponds to the locomotion scoring event (lse). In the script, then the item from that row is called. 
   
   MVars<-c("Raw_Path", #Meta variables
@@ -137,219 +122,7 @@
     Results$loco<-Results$loco2
     Results<-Results[,c(1,2,ncol(Results))] # Used to break the Long tables with Jerseys. Using Loco2 and loco ensures the right columns get through to the next step
     
-    # Load XYZ data--------------------
-    for (i in 1:nrow(Results)) {
-      print(lse)
-      print(c("cow",i))
-      setwd(home)
-      setwd(as.character(Meta$Raw_Path[[lse]])) # select data set 
-      
-      cow <- fread(input = paste(Results[i,1]),sep2 = ";", skip = (Recs_per_Day*as.numeric(paste(Meta$Skip[[lse]]))), 
-                   nrows = (Recs_per_Day*0.25),#amount of data to be 
-                   header=F, select = c(1,3,4,5,8)) 
-      
-      setnames(cow, c("Tstamp","x","y","z","state"))
-      
-      
-      #Redundancy - pick one
-      cow$x<-scale(x = cow$x,center = F,scale = T)
-      cow$y<-scale(x = cow$y,center = F,scale = T)
-      cow$z<-scale(x = cow$z,center = F,scale = T)
-      # Leaving center f for invert check
-      
-      cow$totalAct<- sqrt(cow$x^2)+ sqrt(cow$y^2)+sqrt(cow$z^2)
-      stand<-cow %>% filter (state=="1") # 0= Lying, 1 standing, 2 = walking
-      cow$ta <- 1:(nrow(cow)) # numeric index used later
-      
-      #Consistent Walking RW state 2 walking not consistent----
-      cow<-cow[(as.numeric(side)):(nrow(cow)-side),] 
-      cow$cw<- roll_sum(cow$state,n = Records,align = "center")
-      walk<-cow %>% filter (cow$cw>(Records*1.6))
-      
-      #Make sure x is forward 
-      invert<-mean(walk$x)<0
-      print(invert)
-      
-      if (invert){ # if x is less than 0 - facing backwards
-        walk$x<-((walk$x)*(-1)) # So invert values 
-      } 
-      
-      low<-quantile(walk$x,probs = 0.075) # 1/13 records percentile of x values
-      
-      walk$strike<-walk$x<(low) # indicates if value is below the chosen percentile 
-      #Likely The value of greatest deceleration as the foot strikes the ground. 
-      
-      high<-quantile(walk$x,probs = 0.99) #90th percentile of x value
-      
-      walk<-walk[,c(1:4,6,7,9)]
-      
-      #Widen step data----
-      {
-        veca<-roll_mean(x=walk$x,n = 3,align = "center") 
-        veca<- c(1:11, #padding for matching vector lengths
-                 veca,
-                 1:11) # These are trimmed later.
-        
-        walk$xm1<-veca[10:(nrow(walk)+9)]# x 1 before (m= minus)
-        walk$xm2<-veca[9:(nrow(walk)+8)] # 2 before (m= minus)
-        walk$xm3<-veca[8:(nrow(walk)+7)] # minus
-        walk$xm4<-veca[7:(nrow(walk)+6)] # minus
-        walk$xm5<-veca[6:(nrow(walk)+5)] # minus
-        walk$xm6<-veca[5:(nrow(walk)+4)]
-        walk$xm7<-veca[4:(nrow(walk)+3)]
-        walk$xm8<-veca[3:(nrow(walk)+2)]
-        walk$xm9<-veca[2:(nrow(walk)+1)]
-        walk$xm10<-veca[1:(nrow(walk))]
-        
-        walk$d1<-veca[12:(nrow(walk)+11)] # records after 
-        walk$d2<-veca[13:(nrow(walk)+12)]
-        walk$d3<-veca[14:(nrow(walk)+13)]
-        walk$d4<-veca[15:(nrow(walk)+14)]
-        
-        walk<-walk[10:(nrow(walk)-10),]
-        
-        #also for y
-        veca<-walk$y 
-        veca<- c(1:10,veca,1:10) # add some values to the tails for matching vector lengths - makes the first and last steps useless. Remove tail later.
-        
-        walk$dym1<-veca[10:(nrow(walk)+9)] # x 1 before (m= minus)
-        walk$dym2<-veca[9:(nrow(walk)+8)] # 2 before (m= minus)
-        walk$dym3<-veca[8:(nrow(walk)+7)] # minus
-        walk$dym4<-veca[7:(nrow(walk)+6)] # minus
-        walk$dym5<-veca[6:(nrow(walk)+5)] # minus
-        walk$dym6<-veca[5:(nrow(walk)+4)]
-        walk$dym7<-veca[4:(nrow(walk)+3)]
-        walk$dym8<-veca[3:(nrow(walk)+2)]
-        walk$dym9<-veca[2:(nrow(walk)+1)]
-        walk$dym10<-veca[1:(nrow(walk))]
-        
-        walk$dy1<-veca[12:(nrow(walk)+11)] # records after 
-        walk$dy2<-veca[13:(nrow(walk)+12)]
-        walk$dy3<-veca[14:(nrow(walk)+13)]
-        walk$dy4<-veca[15:(nrow(walk)+14)]
-        
-        walk<-walk[10:(nrow(walk)-10),]
-        
-        #also for z
-        veca<-walk$z 
-        veca<- c(1:10,veca,1:10) # add some values to the tails for matching vector lengths - makes the first and last steps useless. Remove tail later.
-        
-        walk$dzm1<-veca[10:(nrow(walk)+9)] # x 1 before (m= minus)
-        walk$dzm2<-veca[9:(nrow(walk)+8)] # 2 before (m= minus)
-        walk$dzm3<-veca[8:(nrow(walk)+7)] # minus
-        walk$dzm4<-veca[7:(nrow(walk)+6)] # minus
-        walk$dzm5<-veca[6:(nrow(walk)+5)] # minus
-        walk$dzm6<-veca[5:(nrow(walk)+4)]
-        walk$dzm7<-veca[4:(nrow(walk)+3)]
-        walk$dzm8<-veca[3:(nrow(walk)+2)]
-        walk$dzm9<-veca[2:(nrow(walk)+1)]
-        walk$dzm10<-veca[1:(nrow(walk))]
-        
-        walk$dz1<-veca[12:(nrow(walk)+11)] # records after 
-        walk$dz2<-veca[13:(nrow(walk)+12)]
-        walk$dz3<-veca[14:(nrow(walk)+13)]
-        walk$dz4<-veca[15:(nrow(walk)+14)]
-        
-        walk<-walk[10:(nrow(walk)-10),] #trim records
-        
-      }
-      steps <- walk %>% filter (walk$strike==T) # below threshold with surrounding records. Candidate strike points
-      Results$nrow_steps[i] <-  nrow(steps) 
-      
-      steps$lowest<- (steps$x<steps$xm1& steps$x<steps$d1) # Check it is the local nadir
-      steps2a <- steps %>% filter(lowest==T)
-      #repeat necessary? Only finds a few records?
-      steps2a$lowest<- (steps2a$x<steps2a$xm2& steps2a$x<steps2a$d2) 
-      steps2a <- steps2a %>% filter(lowest==T)
-      steps2<-steps2a[,-(ncol(steps2a))]
-      
-### Duration & swing  ----
-      tplus1<- c(1,1,steps2$ta[2:(nrow(steps2)-1)]) # shift
-      steps2$duration<-steps2$ta -tplus1
-      #hist(steps2$duration)
-      steps3 <- steps2 %>% filter(steps2$duration > 6 & steps2$duration < 19 ) # Filter steps with durations outside normal
-      
-      #Select variables for swing analysis for swing percentage
-      swingdf<-sqrt((steps3[,14:9])^2)
-      swingdf[swingdf<(0.5)]<-0 # threshold
-      #Alternative strategy = row mins - find zero accel point
-      for (d in 1:nrow(swingdf)){
-        swingdf$min[d] <-min(swingdf[d,1:6])
-      }
-      
-      swingdf[,1:6]<-swingdf[,1:6]==swingdf$min # true /false
-      swingdf[(nrow(swingdf)+1), #extra row
-              1:(ncol(swingdf))] <- # each column 
-        c(6:1, #assign list  of 6 to 1
-          1) #  1 row 
-      # 1 or 0 and refernce in last row
-      #r = row
-      
-      for (r in 1:(nrow(swingdf)-1)){# for every row
-        for (Col in 1:6){ #then for each column
-          if  (swingdf[r,Col]==T){ # if one - if equal to minimum, if stance phase
-            steps3$SwingDur[r]<-(swingdf[nrow(swingdf),Col])
-            #overrights until stance phase ends - .
-          } 
-        }
-      }
-      
-      
-      
-      
-      steps3<- steps3 %>% mutate(swingPC=SwingDur/duration)
-      
-      steps3<-steps3[steps3$swingPC>0.2&steps3$swingPC<0.55,]
-      #reasonable range
-      mean(steps3$swingPC)
-      steps3$sPCdiff<- (steps3$swingPC-0.419)^2 # source of this figure and date? 
-      steps3$loco <- Results$loco[i]
-      steps3$UNITID <- Results$UNITID[i]
-      steps3$lse <- lse
-      print(i)
-      # Results XYZ ------------
-      steps3<-steps3[,-7] # remove strike
-      Results$n_steps3[i] <- nrow(steps3) 
-      steps4<-steps3[,2:(ncol(steps3)-3)]
-      
-      #mean & variance----
-      #All the mean values
-      Results[i,6:(5+ncol(steps4))]<-as.vector(colMeans(steps4)) #All the variances values
-      Results[i,(6+ncol(steps4)):(5+(ncol(steps4)*2))]<-as.vector(apply(steps4,2,FUN = var))
-      
-      Results$SEM_SwingPC[i]<-SEM(steps3$swingPC)
-      Results$Low[i]<-low
-      Results$High[i]<-high
-      Results$Xmean[i]<-mean(cow$x)
-      Results$Ymean[i]<-mean(cow$y)
-      Results$Zmean[i]<-mean(cow$z)
-      
-      Results$XSum[i]<-sum(cow$x)
-      Results$YSum[i]<-sum(cow$y)
-      Results$ZSum[i]<-sum(cow$z)
-      
-      Results$TASumWalk[i]<-sum(walk$totalAct)
-      Results$TAmeancow[i]<-mean(walk$totalAct)
-      Results$TASumcow[i]<-sum(steps4$totalAct)
-      Results$Mangweth1[i]<-sqrt(mean(walk$y)^2)
-      Results$Mangweth2[i]<-sqrt(mean(cow$y)^2)
-      #variance? Standardised effect? ----
-      #names(Results)
-      
-      
-      # long data
-      if (exists("long")) {
-        long = rbind(long, steps3)
-      } else {
-        long = steps3
-      }
-      print(nrow(steps))
-      timestamp()
-    }
-    
-    names(Results)<-c("inde","UNITID","loco","nsteps","nsteps3", paste("M", names(steps4), sep="_"),paste("V", names(steps4), sep="_"),"SEM_SwingPC","Low","High","Xmean","Ymean", "Zmean","Xsum","Ysum", "Zsum","TASumWalk","TAmeancow","TASumcow","Mangweth1","Mangweth2")
-    
-    # End of XYZ data loop
+   
     {
       ##Rw Converter-----
     #  setwd(as.character(Meta$Raw_Path[[lse]]))
