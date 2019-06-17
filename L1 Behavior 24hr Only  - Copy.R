@@ -2,7 +2,7 @@
 
 { { 
 home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
-# locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
+# location of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
 
@@ -17,7 +17,7 @@ MVars<-c( #Meta variables
 
   jb<-c('./Jerseys','13.06.2017 00:00',   "Loco1506",3,40,40,40,40,40,40,40, 'UNITID')
 
-# Dairygold 2017(Black & white herd)     
+#Dairygold 2017(Black & white herd)     
 BW17<-c('./DGHF2017', '17.06.2017 00:00',  "LocoScore150617",4,
     40,40,40,40,40,40,40, 'UNITID') 
   
@@ -43,7 +43,7 @@ Farma <-c( './Commercial_Farm','17.08.2018 00:00', "Loco160818",2, 1, #SN00018E3
             7,7,7,
             12, 'Ped')# out by a day SN00018D79
                
-  Farmb <-c('./Commercial_Farm', '20.08.2018 00:00',"Loco200818",4,  
+Farmb <-c('./Commercial_Farm', '20.08.2018 00:00',"Loco200818",4,  
             1, #SN00018E33 no loco score, not attached
             1, # SN0001932C - doesn't record all the way through
             3,#SN000192D9
@@ -71,7 +71,8 @@ SumDataList<-vector(mode ="list" ,(nrow(Meta)+3))
     inde2<-substr(inde,start = 35,stop=44 ) # Pedometer Serial numbers
     Results3<-cbind.data.frame(inde,inde2)
     colnames(Results3)<-c("inde","UNITID")
-    #Files that didn't store data  check # for making meta table 
+    #Files that didn't store data  check 
+    # for making meta table 
     #Data that does not work - exclude
 
 #Excluded Records----
