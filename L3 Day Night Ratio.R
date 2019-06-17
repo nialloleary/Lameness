@@ -4,7 +4,7 @@
 #Start-----
 { 
 { 
-home<- "C:/Lameness/LamenessPublicData/RW_Acceleration_and_Behavior" 
+  home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
 # locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
@@ -79,9 +79,6 @@ VRatioList<-vector(mode ="list" ,(nrow(Meta)+3))
     inde2<-substr(inde,start = paste(Meta$SerialStart[[lse]]),stop= paste(Meta$SerialEnd[[lse]])) # Pedometer Serial numbers
     Results3<-cbind.data.frame(inde,inde2)
     colnames(Results3)<-c("inde","UNITID")
-    #Files that didn't store data  check # for making meta table 
-    #Data that does not work - exclude
-
 #Excluded Records----
 # If you want to exclude 12 &13 you exclude 12 twice (13 goes to 12th position). if 12 and 14, 12 and 13 (14 goes to 13).
 #names(Meta)      
@@ -187,9 +184,6 @@ for (i in 2:7){
 CorListA<-left_join(CorListA,as.data.frame(CorList[[i]]),"rowname")
 #colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 
 }
-
-
-
 #P-value summary table ----
 pListA<-as.data.frame(pList[1])
 
@@ -207,7 +201,6 @@ CorListB<-cbind(CorListA[,1],as.data.frame(lapply(CorListA[is.num],round,2)))
 
 #Blank values of negligible size
 CorListC<-replace(CorListB,CorListB<0.2 & CorListB > -0.2,NA)
-
 
 colnames(CorListC)<-c("Variable", "JerseysA","JerseysB", 
 "BW17", "BW18A","BW18B","FarmA", "FarmB", "Jersey Change","BW18 Change")

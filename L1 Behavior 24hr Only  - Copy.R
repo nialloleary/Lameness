@@ -1,7 +1,7 @@
-#This is script 1 of the scripts for the lameness studies. It produces that data required for table 1 of Paper 1 - 24 hour summaries of behaviour. 
+#This is script 1 of the scripts for the lameness studies. It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
 
 { { 
-home<- "C:/Lameness/LamenessPublicData/RW_Acceleration_and_Behavior" 
+home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
 # locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
@@ -22,12 +22,11 @@ BW17<-c('./DGHF2017', '17.06.2017 00:00',  "LocoScore150617",4,
     40,40,40,40,40,40,40, 'UNITID') 
   
 #DairyGold 2018 (Black & white herd)
-#change from 10th  to 9th, could break it
 BW18a<-c( './DGHF2018', '10.08.2018 00:00', "Loco080818",2,
            11, # data doesn't contain walking, SN00017FFD
-           13, #SN00018D41
-           13, #SN0001932C # also faulty at commercial farm
-           15,#SN00018DD5 #4 cows Also didn't work at commercial farm
+           13, #SN00018D41 #
+           13, #SN0001932C # Faulty
+           15,#SN00018DD5 # Faulty
            40,40,40, 'Ped'  )
   
 BW18b<-c('./DGHF2018','13.08.2018 00:00', "Loco130818", 4,
@@ -76,8 +75,7 @@ SumDataList<-vector(mode ="list" ,(nrow(Meta)+3))
     #Data that does not work - exclude
 
 #Excluded Records----
-# If you want to exclude 12 &13 you exclude 12 twice (13 goes to 12th position). if 12 and 14, 12 and 13 (14 goes to 13).
-        
+
 for (m in 6:11){ 
       Exclude<- as.numeric(paste0(Meta[lse,m]))
       Results3<-Results3[-Exclude,]}
@@ -110,7 +108,6 @@ RWconvert<-RWconvert %>% filter(WATCHSTART==paste(Meta$WATCHSTART[[lse]])) # rel
 RWconvert[RWconvert==0]<-NA
 
 #Variable Select----
-names(RWconvert)
 RWconvert<-RWconvert[,c(1,4:8,12:20)] 
 #assign to a list
 MODDF<-left_join(Results,RWconvert,'UNITID')   

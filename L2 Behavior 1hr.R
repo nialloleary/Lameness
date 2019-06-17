@@ -2,7 +2,7 @@
 #Start-----
 { 
 { 
-home<- "C:/Lameness/LamenessPublicData/RW_Acceleration_and_Behavior" 
+ home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
 # locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
@@ -111,7 +111,7 @@ feat <- fread(input = paste(Results[i,1]),sep2 = ";",  header=T)
 RWconvert<-rbind.data.frame(RWconvert, feat,fill=TRUE)
 }
 
-#HERE FOR hourly
+#Here is different from script 1, hourly data
 RWconvert$Date<-substr(x = RWconvert$WATCHSTART,start = 1,stop = 2)
 RWconvert <- RWconvert %>% filter(Date==paste(Meta$Date[[lse]])) #Chosen day
 
@@ -183,8 +183,6 @@ for (i in 2:7){
 CorListA<-left_join(CorListA,as.data.frame(CorList[[i]]),"rowname")
 #colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 
 }
-
-
 
 #P-value summary table ----
 pListA<-as.data.frame(pList[1])
