@@ -4,7 +4,7 @@
 #Start-----
 { 
 { 
-  home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
+  home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
 # locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")

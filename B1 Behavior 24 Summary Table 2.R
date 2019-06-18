@@ -1,7 +1,7 @@
 #This is script 1 of the scripts for the lameness studies. It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
 
 { { 
-home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
+home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
 # location of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
@@ -56,9 +56,8 @@ Meta$LSE<-c("1.aJerseys", "1.bJerseys","2.BW17", "3.aBW18a","3.bBW18b","4.aFarma
 colnames(Meta)<-MVars
   
 #Initialise lists to store results from each cohort
-CorList<-vector(mode ="list" ,(nrow(Meta)+3))
 numList<-vector(mode ="list" ,(nrow(Meta)+3))
-pList<-vector(mode ="list" ,(nrow(Meta)+3))
+varList<-vector(mode ="list" ,(nrow(Meta)+3))
 SumDataList<-vector(mode ="list" ,(nrow(Meta)+3))
 
 #Loop start----
@@ -118,98 +117,33 @@ SumDataList[[lse]]<-MODDF
 #### Correlation within trial ----
 # rcorr creates a list of 3 with 1 - Correlation matrix r, 2 n and 3 p values
 
-CorMat <- rcorr(as.matrix(MODDF),type = 'spearman')
-
-#r
-DFCor<-rownames_to_column(as.data.frame(CorMat[1]))
-CorList[[lse]]<-as.data.frame(DFCor[,1:2])
-
-#n - values
-DFCor<-rownames_to_column(as.data.frame(CorMat[2]))
-numList[[lse]]<-as.data.frame(DFCor[,1:2])
-
-#p-values
-DFCor<-rownames_to_column(as.data.frame(CorMat[3]))
-pList[[lse]]<-as.data.frame(DFCor[,1:2])
-
 print("LSE")
 print(lse)
   }
     }
 
-#Start & end of trial change variables ----
-#Need to remove extra jersey from 2nd scoring
-JerseyB<-as.data.frame(SumDataList[[2]]) 
-JerseyB<-JerseyB[-4,] # Cow wasn't scored first time
-SumDataList[[8]] <- SumDataList[[1]]-JerseyB  #Jersey change
-SumDataList[[9]]<-(as.data.frame(SumDataList[4])-as.data.frame(SumDataList[5]))  #BW2018 Change
-  
-  SumDataList[[10]]<-as.data.frame(SumDataList[6])-as.data.frame(SumDataList[7]) #Commercial farm change
-
-  #Change correlations ----
-
-  for (lse in 8:10) {
-#Duplication of code
-CorMat <- rcorr(x = as.matrix(SumDataList[[lse]]),type = 'spearman')
-    
-DFCor<-rownames_to_column(as.data.frame(CorMat[1])) #r
-    CorList[[lse]]<-as.data.frame(DFCor[,1:2])
-        
-DFCor<-rownames_to_column(as.data.frame(CorMat[2])) #n - values
-    numList[[lse]]<-as.data.frame(DFCor[,1:2])
-        
-DFCor<-rownames_to_column(as.data.frame(CorMat[3])) #p-values
-    pList[[lse]]<-as.data.frame(DFCor[,1:2])
-  }
-  
 }
 
 #Results begin ----
 #Combine key columns from the lists created above into summary table
-CorListA<-as.data.frame(CorList[1])
-for (i in 2:10){
-CorListA<-left_join(CorListA,as.data.frame(CorList[[i]]),"rowname")
-colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 }
+#Want the mean and var of 24 hour summary of each variable
+mean.sd <- function(x) c(mean =mean(x,na.rm = T), sd = sd(x,na.rm = T))  
+  
+SummaryTable2<-as.data.frame(t(sapply(X = SumDataList[[1]],FUN = mean.sd)))
+for (i in 2:7){
+  SummaryTable2<-cbind.data.frame(SummaryTable2,
+                      as.data.frame(t(sapply(X = SumDataList[[i]],FUN = mean.sd))))
+}
+SummaryTable2<-round(SummaryTable2,digits = 0)
+SummaryTable2<-rownames_to_column(SummaryTable2)
+colnames(SummaryTable2)<-c("Variable","1.a Jerseys Mean","1.a Jerseys Var", "1.b Jerseys Mean","1.b Jerseys Var","2 BW17 Mean","2 BW17Var", "3.a BW18a Mean","3.a BW18a Var","3.b BW18b Mean","3.b BW18b Var","4.a Farm Mean","4.a FarmaVar", "4.b Farm Mean", "4.b Farm Var")
 
-numListA<-as.data.frame(numList[1]) # N per sample
-for (i in 2:10){numListA<-left_join(numListA,as.data.frame(numList[[i]]),"rowname")
-
-colnames(numListA)[ncol(numListA)]<-ncol(numListA)-1 } #number the columns
-
-#P-value summary table ----
-pListA<-as.data.frame(pList[1])
-
-for (i in 2:10){pListA<-left_join(pListA,as.data.frame(pList[[i]]),"rowname")
-
-colnames(pListA)[ncol(pListA)]<-ncol(pListA)-1 }
-   
-CorListA$AverageAbsoluteCorrelation <- rowMeans(CorListA[,2:8])
-CorListA$AverageChangeCorrelation<- rowMeans(CorListA[,9:11])
-
-CorListA[nrow(CorListA)+1,1]<-'n'
-CorListA[nrow(CorListA),2:11]<- sapply(X = numListA[2:11],FUN = max)
-#Round & Name  
-
-is.num <- sapply(CorListA, is.numeric)
-
-CorListB<-cbind(CorListA[,1],as.data.frame(lapply(CorListA[is.num],round,2)))
-
-#Blank values of negligible size
-CorListC<-replace(CorListB,CorListB<0.2 & CorListB > -0.2,NA)
-
-
-colnames(CorListC)<-c("Variable", "JerseysA","JerseysB", 
-"BW17", "BW18A","BW18B","FarmA", "FarmB", "Jersey Change","BW18 Change", "Farm Change","Average Cor","Av Change Cor")
-
-plstSig<-pListA
-plstSig[pListA>0.2]<-NA
-plstSig$rowname<- pListA$rowname
-
+SummaryTable2<-SummaryTable2[order(SummaryTable2$Variable,decreasing = F),]
 #Write Behaviour correlation Table
 setwd('../')
 setwd('../')
 }# Outermost
 
-write.csv(x = CorListC,file = "Table1.csv")
-write.csv(x = plstSig,file = "Table1Pvals.csv")
+write.csv(x = SummaryTable2,file = "Table2_24hr_Summary.csv")
+
 #P Values - Manually add in stars for the few that are significant.

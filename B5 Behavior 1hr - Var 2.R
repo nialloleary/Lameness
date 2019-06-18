@@ -2,7 +2,7 @@
 #Start-----
 { 
 { 
- home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
+ home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
 # locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
@@ -115,45 +115,17 @@ RWconvert<-rbind.data.frame(RWconvert, feat,fill=TRUE)
 RWconvert$Date<-substr(x = RWconvert$WATCHSTART,start = 1,stop = 2)
 RWconvert <- RWconvert %>% filter(Date==paste(Meta$Date[[lse]])) #Chosen day
 
-RWconvert$Hour<-as.numeric(substr(x = RWconvert$WATCHSTART,start = 12,stop = 13))
-
-#RWconvert[RWconvert==0]<-NA
-#Between milking----
-DayTime <- c(10:15)
-Day <- RWconvert %>% filter(Hour %in% DayTime)
-DayDataList[lse]<-Day
-
-NightTime <- c(0:5,19:23)
-Night <- RWconvert %>% filter(Hour %in% NightTime)
-NightDataList[lse]<-Night
-
-DayResM<- Day %>% group_by(UNITID) %>% summarise_all(mean)
-DayResM<-DayResM[,c(1,4:8,12:20)]
-DayResV<- Day %>% group_by(UNITID) %>% summarise_all(var)
-DayResV<-DayResV[,c(1,4:8,12:20)]
-
-NightResM<- Night %>% group_by(UNITID) %>% summarise_all(mean)
-NightResM<-NightResM[,c(1,4:8,12:20)]
-
-NightResV<- Night %>% group_by(UNITID) %>% summarise_all(var)
-NightResV<-NightResV[,c(1,4:8,12:20)]
-
-#Variable Select----
-
-#assign to a list
-MODDF<-left_join(Results,DayResM,'UNITID')   
-MODDF<-left_join(MODDF,DayResV,'UNITID')   
-MODDF<-left_join(MODDF,NightResM,'UNITID')  
-MODDF<-left_join(MODDF,NightResV,'UNITID')   
-
-#x= day m, y= day variance, x.x = night mean, y.y = night variance
-#Split into hourly sub groups
-#Calculate 
+#RWconvert$Hour<-as.numeric(substr(x = RWconvert$WATCHSTART,start = 12,stop = 13))
 
 
+#so I want variance for each variable for each cow -so group by 
+
+MODDF<- RWconvert %>% group_by(UNITID)%>% summarise_all(var)
+
+MODDF<-left_join(Results,MODDF,'UNITID')
+names(MODDF)
+MODDF<-MODDF[,c(-1,-2,-4:-6,-11:-13,-32,-34)]
 SumDataList[[lse]]<-MODDF
-MODDF<-MODDF[,c(-1,-2)]
-
 #### Correlation within trial ----
 # rcorr creates a list of 3 with 1 - Correlation matrix r, 2 n and 3 p values
 
