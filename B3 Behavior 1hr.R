@@ -1,11 +1,9 @@
-#This is script 3 of the scripts for the lameness studies. It produces that data required for a section of Paper 1, table 2 - ratio of day to night total summaries of behaviour.
-
-#The script is the same as script 2 up until about line 140 
+#This is script 2 of the scripts for the lameness studies. It produces that data required for a section of Paper 1 - day and night total summaries of behaviour. Table not presented
 #Start-----
 { 
 { 
-  home<- "C:/Users/olearyn2/OneDrive - Lincoln University/RW_Acceleration_and_Behavior" 
-# locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
+ home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
+# locotion of Lameness files on your computer - data available from Nialloleary@gmail.com
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
 
@@ -42,14 +40,14 @@ BW18b<-c('./DGHF2018','20','29','13', "Loco130818", 4,
   
   #Commerical farm 
 Farma <-c( './Commercial_Farm','20','29','17', "Loco160818",2, 
-           1, #SN00018E33 no loco score, not attached
-           40, # SN0001932C
-           40, #SN000192D9
-           40,40,40,
-           40, 'Ped')# out by a day SN00018D79
+           40, #SN00018E33 no loco score, not attached
+            40, # SN0001932C
+            40, #SN000192D9
+            40,40,40,
+          40, 'Ped')# out by a day SN00018D79
                
   Farmb <-c('./Commercial_Farm','20','29', '20',"Loco200818",4,  
-            1, #SN00018E33 no loco score, not attached
+            40, #SN00018E33 no loco score, not attached
             40, # SN0001932C
             40, #SN000192D9
             40,40,40,
@@ -61,13 +59,12 @@ Meta$LSE<-c("1.aJerseys", "1.bJerseys","2.BW17", "3.aBW18a","3.bBW18b","4.aFarma
 colnames(Meta)<-MVars
   
 #Initialise lists to store results from each cohort
-#All needed?
 CorList<-vector(mode ="list" ,(nrow(Meta)+3))
 numList<-vector(mode ="list" ,(nrow(Meta)+3))
 pList<-vector(mode ="list" ,(nrow(Meta)+3))
 SumDataList<-vector(mode ="list" ,(nrow(Meta)+3))
-MRatioList<-vector(mode ="list" ,(nrow(Meta)+3))
-VRatioList<-vector(mode ="list" ,(nrow(Meta)+3))
+DayDataList<-vector(mode ="list" ,(nrow(Meta)+3))
+NightDataList<-vector(mode ="list" ,(nrow(Meta)+3))
 #Loop start----
 
     for (lse in 1:nrow(Meta)) { # Load selected locomotion scoring events
@@ -79,6 +76,9 @@ VRatioList<-vector(mode ="list" ,(nrow(Meta)+3))
     inde2<-substr(inde,start = paste(Meta$SerialStart[[lse]]),stop= paste(Meta$SerialEnd[[lse]])) # Pedometer Serial numbers
     Results3<-cbind.data.frame(inde,inde2)
     colnames(Results3)<-c("inde","UNITID")
+    #Files that didn't store data  check # for making meta table 
+    #Data that does not work - exclude
+
 #Excluded Records----
 # If you want to exclude 12 &13 you exclude 12 twice (13 goes to 12th position). if 12 and 14, 12 and 13 (14 goes to 13).
 #names(Meta)      
@@ -111,7 +111,7 @@ feat <- fread(input = paste(Results[i,1]),sep2 = ";",  header=T)
 RWconvert<-rbind.data.frame(RWconvert, feat,fill=TRUE)
 }
 
-# Pull out characters for date
+#Here is different from script 1, hourly data
 RWconvert$Date<-substr(x = RWconvert$WATCHSTART,start = 1,stop = 2)
 RWconvert <- RWconvert %>% filter(Date==paste(Meta$Date[[lse]])) #Chosen day
 
@@ -121,11 +121,11 @@ RWconvert$Hour<-as.numeric(substr(x = RWconvert$WATCHSTART,start = 12,stop = 13)
 #Between milking----
 DayTime <- c(10:15)
 Day <- RWconvert %>% filter(Hour %in% DayTime)
-
+DayDataList[lse]<-Day
 
 NightTime <- c(0:5,19:23)
 Night <- RWconvert %>% filter(Hour %in% NightTime)
-
+NightDataList[lse]<-Night
 
 DayResM<- Day %>% group_by(UNITID) %>% summarise_all(mean)
 DayResM<-DayResM[,c(1,4:8,12:20)]
@@ -138,27 +138,26 @@ NightResM<-NightResM[,c(1,4:8,12:20)]
 NightResV<- Night %>% group_by(UNITID) %>% summarise_all(var)
 NightResV<-NightResV[,c(1,4:8,12:20)]
 
-#Diverge from script 2 here ----
-MRatio<- DayResM[,2:ncol(DayResM)]/NightResM[,2:ncol(DayResM)]
-MRatio<-cbind.data.frame(DayResM[,1],MRatio)
-MRatio<- left_join(Results, MRatio, "UNITID")
-MRatio<-MRatio[,c(-1,-2)]
-MRatioList[lse]<-MRatio
-
-VRatio<- DayResV[,2:ncol(DayResV)]/NightResV[,2:ncol(DayResV)]
-VRatio<-cbind.data.frame(DayResV[,1],VRatio)
-VRatio<- left_join(Results, VRatio, "UNITID")
-VRatio<-VRatio[,c(-1,-2)]
-VRatioList[lse]<-VRatio
-
 #Variable Select----
+
+#assign to a list
+MODDF<-left_join(Results,DayResM,'UNITID')   
+MODDF<-left_join(MODDF,DayResV,'UNITID')   
+MODDF<-left_join(MODDF,NightResM,'UNITID')  
+MODDF<-left_join(MODDF,NightResV,'UNITID')   
+
+#x= day m, y= day variance, x.x = night mean, y.y = night variance
+#Split into hourly sub groups
+#Calculate 
+
+
+SumDataList[[lse]]<-MODDF
+MODDF<-MODDF[,c(-1,-2)]
 
 #### Correlation within trial ----
 # rcorr creates a list of 3 with 1 - Correlation matrix r, 2 n and 3 p values
 
-#Variance or Mean ----
-#CorMat <- rcorr(as.matrix(MRatio),type = 'spearman')
-CorMat <- rcorr(as.matrix(VRatio),type = 'spearman')
+CorMat <- rcorr(as.matrix(MODDF),type = 'spearman')
 
 #r
 DFCor<-rownames_to_column(as.data.frame(CorMat[1]))
@@ -184,6 +183,7 @@ for (i in 2:7){
 CorListA<-left_join(CorListA,as.data.frame(CorList[[i]]),"rowname")
 #colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 
 }
+
 #P-value summary table ----
 pListA<-as.data.frame(pList[1])
 
@@ -201,6 +201,7 @@ CorListB<-cbind(CorListA[,1],as.data.frame(lapply(CorListA[is.num],round,2)))
 
 #Blank values of negligible size
 CorListC<-replace(CorListB,CorListB<0.2 & CorListB > -0.2,NA)
+
 
 colnames(CorListC)<-c("Variable", "JerseysA","JerseysB", 
 "BW17", "BW18A","BW18B","FarmA", "FarmB", "Jersey Change","BW18 Change")
