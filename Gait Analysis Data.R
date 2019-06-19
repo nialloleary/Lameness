@@ -28,7 +28,7 @@
 
 #Package loading & Define Functions & set constants-----------
 {{ # 467
-  home<- "D:/RW_Acceleration_And_Behavior_Converted" # locoation of Lameness file on your computer - data available from Nialloleary@gmail.com
+  home<- "D:/RW_Acceleration_And_Behavior_Converted" # location of Lameness file on your computer - data available from Nialloleary@gmail.com
   library(magrittr);library(dplyr); library(data.table); library(RcppRoll);  library(tibble);library(purrr);library(zoo);
   
   #Function mean and Standard deviation combined 
