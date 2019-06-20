@@ -1,54 +1,147 @@
-#This is script 1 of the scripts for the lameness studies. It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
-#Start-----
-{ { 
-home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
-# location of Lameness files on your computer - data available from Nialloleary@gmail.com
+# This is script 1 of the scripts for the lameness studies. 
+# It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
+# Start-----
+{ 
+  { 
+    home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
+    # Location of Lameness files on your computer - data available from Nialloleary@gmail.com
 
-library(dplyr); library(data.table);library(tibble);library("Hmisc")
+    library(dplyr); 
+    library(data.table);
+    library(tibble);
+    library("Hmisc")
 
-#Meta Table ----
-#This table contains the meta data for locomotion scoring event required to run the script. This facilitate same script being applied to each data set. Only these variables should change between locmotion scoring events. The Selected row corresponds to the locomotion scoring event (lse). In the script, then the item from that row is called. 
+    # Meta Table ----
+    # This table contains the meta data for locomotion scoring event required to run the script. 
+    # This facilitate same script being applied to each data set. 
+    # Only these variables should change between locmotion scoring events. 
+    # The Selected row corresponds to the locomotion scoring event (lse). 
+    # In the script, then the item from that row is called. 
   
-MVars<-c( #Meta variables 
-      "Folder",  "WATCHSTART","Feature path","Loco_Index","ExclCow","Excl2","Excl3","ExclCosws4","ExclCows5","ExclCows6","ExclCows7",'JoinBy', "LSE")
+    MVars <- c( #Meta variables 
+      "Folder",  
+      "WATCHSTART",
+      "Feature path",
+      "Loco_Index",
+      "ExclCow",
+      "Excl2",
+      "Excl3",
+      "ExclCosws4",
+      "ExclCows5",
+      "ExclCows6",
+      "ExclCows7",
+      'JoinBy', 
+      "LSE"
+    )
   
-  #Jersey trial - First scoring (a) 
-  ja<-c( './Jerseys', '02.06.2017 00:00',  "Loco0106",2,40,40,40,40,40,40,40, 'UNITID')
+    # Jersey trial - First scoring (a) 
+    ja <- c( 
+      './Jerseys', 
+      '02.06.2017 00:00',  
+      "Loco0106",
+      2,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40, 
+      'UNITID'
+    )
 
-  jb<-c('./Jerseys','13.06.2017 00:00',   "Loco1506",3,40,40,40,40,40,40,40, 'UNITID')
+    jb <- c(
+      './Jerseys',
+      '13.06.2017 00:00',   
+      "Loco1506",
+      3,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40, 
+      'UNITID'
+    )
 
-#Dairygold 2017(Black & white herd)     
-BW17<-c('./DGHF2017', '17.06.2017 00:00',  "LocoScore150617",4,
-    40,40,40,40,40,40,40, 'UNITID') 
+    # Dairygold 2017(Black & white herd)     
+    BW17 <- c(
+      './DGHF2017', 
+      '17.06.2017 00:00',  
+      "LocoScore150617",
+      4,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40, 
+      'UNITID'
+    ) 
   
-#DairyGold 2018 (Black & white herd)
-BW18a<-c( './DGHF2018', '10.08.2018 00:00', "Loco080818",2,
-           11, # data doesn't contain walking, SN00017FFD
-           13, #SN00018D41 #
-           13, #SN0001932C # Faulty
-           15,#SN00018DD5 # Faulty
-           40,40,40, 'Ped'  )
+    #DairyGold 2018 (Black & white herd)
+    BW18a <- c( 
+      './DGHF2018', 
+      '10.08.2018 00:00', 
+      "Loco080818",
+      2,
+      11, # data doesn't contain walking, SN00017FFD
+      13, #SN00018D41 #
+      13, #SN0001932C # Faulty
+      15,#SN00018DD5 # Faulty
+      40,
+      40,
+      40, 
+      'Ped'  
+    )
   
-BW18b<-c('./DGHF2018','13.08.2018 00:00', "Loco130818", 4,
-           11, # SN00017FFD
-           13, #SN00018D41
-           13, #SN0001932C
-           15,#SN00018DD5 
-           40,40,40, 'Ped'   )
+    BW18b <- c(
+      './DGHF2018',
+      '13.08.2018 00:00', 
+      "Loco130818", 
+      4,
+      11, # SN00017FFD
+      13, #SN00018D41
+      13, #SN0001932C
+      15,#SN00018DD5 
+      40,
+      40,
+      40, 
+      'Ped'   
+    )
   
-  #Commerical farm 
-Farma <-c( './Commercial_Farm','17.08.2018 00:00', "Loco160818",2, 1, #SN00018E33 no loco score, not attached
-            1, # SN0001932C
-            3, #SN000192D9
-            7,7,7,
-            12, 'Ped')# out by a day SN00018D79
+    # Commerical farm 
+    Farma <-c ( 
+      './Commercial_Farm',
+      '17.08.2018 00:00', 
+      "Loco160818",
+      2, 
+      1, #SN00018E33 no loco score, not attached
+      1, # SN0001932C
+      3, #SN000192D9
+      7,
+      7,
+      7,
+      12, 
+      'Ped'
+    )# out by a day SN00018D79
                
-Farmb <-c('./Commercial_Farm', '20.08.2018 00:00',"Loco200818",4,  
-            1, #SN00018E33 no loco score, not attached
-            1, # SN0001932C - doesn't record all the way through
-            3,#SN000192D9
-            7,#SN00018DD5 - all lying
-            7, 7, 12, 'Ped')# out by a day SN00018D79
+    Farmb <-c(
+      './Commercial_Farm', 
+      '20.08.2018 00:00',
+      "Loco200818",
+      4,  
+      1, #SN00018E33 no loco score, not attached
+      1, # SN0001932C - doesn't record all the way through
+      3,#SN000192D9
+      7,#SN00018DD5 - all lying
+      7, 
+      7, 
+      12, 
+      'Ped'
+    )# out by a day SN00018D79
                
 #LSE selection (Locomotion scoring event)
 Meta<-rbind.data.frame(ja, jb,BW17, BW18a,BW18b,Farma, Farmb)
