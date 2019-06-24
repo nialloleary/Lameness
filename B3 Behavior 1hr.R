@@ -2,7 +2,7 @@
 #Start-----
 { 
   { 
-    home<- "C:/SourceCode/Lameness/Data/RW_Acceleration_and_Behavior" 
+    home<- "C:/Users/willo/Documents/Lameness dataset/Data/RW_Acceleration_and_Behavior" 
     # Locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
 
     library(dplyr); 
@@ -216,8 +216,8 @@
         header = T
       )
       Score <- read.csv(
-        file = "Score.csv"
-        ,sep = ",",
+        file = "Score.csv",
+        sep = ",",
         header = T
       )
       NUM <- as.numeric(paste0(Meta$Loco_Index[[lse]])) # Column with relevant loco score for this 
