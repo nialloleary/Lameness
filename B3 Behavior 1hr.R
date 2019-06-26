@@ -3,7 +3,11 @@
 { 
 { 
  home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
+<<<<<<< HEAD:B3 Behavior 1hr.R
 # locotion of Lameness files on your computer - data available from Nialloleary@gmail.com
+=======
+# locoation of Lameness files on your computer - data available from Nialloleary@gmail.com
+>>>>>>> 339eb7c825395d748117a6ff4aaa64f90944e29b:L2 Behavior 1hr.R
 
 library(dplyr); library(data.table);library(tibble);library("Hmisc")
 
