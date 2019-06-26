@@ -1,16 +1,16 @@
-#This is script 1 of the scripts for the lameness studies. It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
+#This is script 1 of the scripts for the lameness studies. It produces that data required for the summary data, Table 4. 
 
 { 
   { 
-    home<- "C:/SourceCode/Lameness/Data/RW_Acceleration_and_Behavior" 
+    home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
     # Location of Lameness files on your computer - data available from Nialloleary@gmail.com
 
     library(dplyr); 
     library(data.table);
     library(tibble);
-    library("Hmisc")
+    library(Hmisc)
 
-    # meta_data_frame Table ----
+    # Meta_data_frame Table ----
     # This table contains the meta data for locomotion scoring event required to run the script. 
     # This facilitate same script being applied to each data set. 
     # Only these variables should change between locmotion scoring events. 
@@ -23,9 +23,9 @@
       "Feature path",
       "Loco_Index",
       "ExclCow",
-      "Excl2",
-      "Excl3",
-      "ExclCosws4",
+      "ExclCow2",
+      "ExclCow3",
+      "ExclCowsws4",
       "ExclCows5",
       "ExclCows6",
       "ExclCows7",
@@ -174,7 +174,8 @@
       )
     )
     
-  
+    locomotion_scoring_event<-1
+    
     # Loop start----
     for (locomotion_scoring_event in 1: nrow(meta_data_frame) ) { # Load selected locomotion scoring events
       print(
@@ -267,33 +268,33 @@
         setwd("./24Hourly")
         index
         #load first & Initialise
-        rw_convert <- fread(input = paste(results[1,1]),sep2 = ";", header=T)
+        rw_convert_df <- fread(input = paste(results[1,1]),sep2 = ";", header=T)
         #Append the rest
         for (i in 2:nrow(results)) { # loads all the day records
-          feat <- fread(
+          behaviors <- fread(
             input = paste(results[i,1]),
             sep2 = ";",  
             header=T
           )
-          rw_convert <- rbind.data.frame(
-            rw_convert, 
-            feat
+          rw_convert_df <- rbind.data.frame(
+            rw_convert_df, 
+            behaviors
           )
         }
   
-        rw_convert <- rw_convert %>% filter(
+        rw_convert_df <- rw_convert_df %>% filter(
           WATCHSTART==paste(
             meta_data_frame$WATCHSTART[[locomotion_scoring_event]]
           )
         ) # relevant day
-        rw_convert[rw_convert==0]<-NA
+        rw_convert_df[rw_convert_df==0]<-NA
   
         #Variable Select----
-        rw_convert <- rw_convert[,c(1,4:8,12:20)] 
+        rw_convert_df <- rw_convert_df[,c(1,4:8,12:20)] 
         #assign to a list
         MODDF <- left_join(
           results,
-          rw_convert,
+          rw_convert_df,
           "UNITID"
         )   
         MODDF <- MODDF[,c(-1,-2)]
@@ -316,6 +317,7 @@
                       mean =mean(x,na.rm = T), 
                       sd = sd(x,na.rm = T)
                     )  
+  
   summary_table_2 <- as.data.frame(
     t(sapply
       (
@@ -363,14 +365,14 @@
     "4.b Farm Var"
   )
   
-  summary_table_2 <- summary_table_2[order(summary_table_2$Variable,decreasing = F),]
+  summary_table_4 <- summary_table_2[order(summary_table_2$Variable,decreasing = F),]
   # Write Behaviour correlation Table
   setwd("../")
   setwd("../")
 }
 # Outermost
 
-write.csv(x = summary_table_2,file = "Table2_24hr_Summary.csv")
+write.csv(x = summary_table_4,file = "Table4_24hr_Summary.csv")
 
 #P Values - Manually add in stars for the few that are significant.
 
