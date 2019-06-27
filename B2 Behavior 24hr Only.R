@@ -1,9 +1,10 @@
-# This is script 1 of the scripts for the lameness studies. 
-# It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour. 
+# This is script 2/5 the scripts for the behavior studies. 
+# It produces that data required for table 5 of Paper 1 - 24 hour summaries of behaviour. 
+
 # Start-----
 { 
   { 
-    home <- "C:/SourceCode/Lameness/Data/RW_Acceleration_and_Behavior" 
+    home<- "C:/Users/olearyn2/OneDrive - Lincoln University/Lameness/RW_Acceleration_and_Behavior" 
     # Location of Lameness files on your computer - data available from Nialloleary@gmail.com
 
     library(dplyr); 
@@ -18,14 +19,14 @@
     # The Selected row corresponds to the locomotion scoring event (lse). 
     # In the script, then the item from that row is called. 
   
-    MVars <- c( #Meta variables 
+    meta_column_names <- c( #Meta variables 
       "Folder",  
       "WATCHSTART",
       "Feature path",
       "Loco_Index",
       "ExclCow",
-      "Excl2",
-      "Excl3",
+      "Exclcows2",
+      "Exclcows3",
       "ExclCosws4",
       "ExclCows5",
       "ExclCows6",
@@ -144,7 +145,7 @@
     )# out by a day SN00018D79
                
     #LSE selection (Locomotion scoring event)
-    Meta <- rbind.data.frame(
+    meta_data_frame <- rbind.data.frame(
       ja, 
       jb,
       BW17, 
@@ -153,7 +154,7 @@
       Farma, 
       Farmb
     )
-    Meta$LSE <- c(
+    meta_data_frame$locomotion_scoring_event <- c(
       "1.aJerseys", 
       "1.bJerseys",
       "2.BW17", 
@@ -162,19 +163,19 @@
       "4.aFarma", 
       "4.bFarmb"
     )
-    colnames(Meta) <- MVars
+    colnames(meta_data_frame) <- meta_column_names
       
     #Initialise lists to store results from each cohort
-    CorList <- numList <- pList <- SumDataList <- vector(
+    CorrelationList <- numList <- pList <- SumDataList <- vector(
       mode ="list" ,
-      (nrow(Meta)+3)
+      (nrow(meta_data_frame)+3)
     )
 
     #Loop start----
-    for (lse in 1:nrow(Meta)) { # Load selected locomotion scoring events
-      print(c("Locomotion Scoring Event",lse))
+    for (locomotion_scoring_event in 1:nrow(meta_data_frame)) { # Load selected locomotion scoring events
+      print(c("Locomotion Scoring Event",locomotion_scoring_event))
       setwd(home) 
-      setwd(as.character(Meta$Folder[[lse]]))
+      setwd(as.character(meta_data_frame$Folder[[locomotion_scoring_event]]))
       setwd('./24Hourly')
       inde <- dir() # Index of file names 
       inde2 <- substr(inde,start = 35,stop=44 ) # Pedometer Serial numbers
@@ -186,7 +187,7 @@
 
       #Excluded Records----
       for (m in 6:11){ 
-            Exclude <- as.numeric(paste0(Meta[lse,m]))
+            Exclude <- as.numeric(paste0(meta_data_frame[locomotion_scoring_event,m]))
             Results3 <- Results3[-Exclude,]
       }
 
@@ -202,12 +203,12 @@
         sep = ",",
         header = T
       )
-      NUM <- as.numeric(paste0(Meta$Loco_Index[[lse]])) # Column with relevant loco score for this 
+      NUM <- as.numeric(paste0(meta_data_frame$Loco_Index[[locomotion_scoring_event]])) # Column with relevant loco score for this 
       Score$loco2 <- Score[,NUM] 
       Ref <- left_join(
         Score,
         Ref1,
-        paste0(Meta$JoinBy[[lse]])
+        paste0(meta_data_frame$JoinBy[[locomotion_scoring_event]])
       )
       Results2 <- left_join(
         Results3,
@@ -234,7 +235,9 @@
           )
           RWconvert <- rbind.data.frame(RWconvert, feat)}
 
-          RWconvert <- RWconvert %>% filter(WATCHSTART==paste(Meta$WATCHSTART[[lse]])) # relevant day
+          RWconvert <- RWconvert %>% 
+            filter(WATCHSTART==paste(
+              meta_data_frame$WATCHSTART[[locomotion_scoring_event]])) # relevant day
           RWconvert[RWconvert==0]<-NA
 
           #Variable Select----
@@ -242,7 +245,7 @@
           #assign to a list
           MODDF <- left_join(Results,RWconvert,'UNITID')   
           MODDF <- MODDF[,c(-1,-2)]
-          SumDataList[[lse]]<-MODDF
+          SumDataList[[locomotion_scoring_event]]<-MODDF
 
           #### Correlation within trial ----
           # rcorr creates a list of 3 with 1 - Correlation matrix r, 2 n and 3 p values
@@ -251,18 +254,18 @@
 
           #r
           DFCor <- rownames_to_column(as.data.frame(CorMat[1]))
-          CorList[[lse]]<-as.data.frame(DFCor[,1:2])
+          CorrelationList[[locomotion_scoring_event]]<-as.data.frame(DFCor[,1:2])
 
           #n - values
           DFCor <- rownames_to_column(as.data.frame(CorMat[2]))
-          numList[[lse]]<-as.data.frame(DFCor[,1:2])
+          numList[[locomotion_scoring_event]]<-as.data.frame(DFCor[,1:2])
 
           #p-values
           DFCor <- rownames_to_column(as.data.frame(CorMat[3]))
-          pList[[lse]] <- as.data.frame(DFCor[,1:2])
+          pList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
           
-          print("LSE")
-          print(lse)
+          print("locomotion_scoring_event")
+          print(locomotion_scoring_event)
       }
     }
 
@@ -279,30 +282,30 @@
 
     #Change correlations ----
 
-    for (lse in 8:10) {
+    for (locomotion_scoring_event in 8:10) {
       #Duplication of code
-      CorMat <- rcorr(x = as.matrix(SumDataList[[lse]]),type = 'spearman')
+      CorMat <- rcorr(x = as.matrix(SumDataList[[locomotion_scoring_event]]),type = 'spearman')
           
       DFCor <- rownames_to_column(as.data.frame(CorMat[1])) #r
-      CorList[[lse]] <- as.data.frame(DFCor[,1:2])
+      CorrelationList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
               
       DFCor <- rownames_to_column(as.data.frame(CorMat[2])) #n - values
-      numList[[lse]] <- as.data.frame(DFCor[,1:2])
+      numList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
               
       DFCor <- rownames_to_column(as.data.frame(CorMat[3])) #p-values
-      pList[[lse]] <- as.data.frame(DFCor[,1:2])
+      pList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
     }
   }
 
   #Results begin ----
   #Combine key columns from the lists created above into summary table
-  CorListA <- as.data.frame(CorList[1])
+  CorrelationListA <- as.data.frame(CorrelationList[1])
   for (i in 2:10){
-    CorListA <- left_join(
-      CorListA,as.data.frame(CorList[[i]]),
+    CorrelationListA <- left_join(
+      CorrelationListA,as.data.frame(CorrelationList[[i]]),
       "rowname"
     )
-    colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 
+    colnames(CorrelationListA)[ncol(CorrelationListA)]<-ncol(CorrelationListA)-1 
   }
 
   numListA <- as.data.frame(numList[1]) # N per sample
@@ -328,20 +331,20 @@
       colnames(pListA)[ncol(pListA)] <- ncol(pListA)-1 
     }
    
-    CorListA$AverageAbsoluteCorrelation <- rowMeans(CorListA[,2:8])
-    CorListA$AverageChangeCorrelation <- rowMeans(CorListA[,9:11])
+    CorrelationListA$AverageAbsoluteCorrelation <- rowMeans(CorrelationListA[,2:8])
+    CorrelationListA$AverageChangeCorrelation <- rowMeans(CorrelationListA[,9:11])
 
-    CorListA[nrow(CorListA)+1,1] <- 'n'
-    CorListA[nrow(CorListA),2:11] <- sapply(X = numListA[2:11],FUN = max)
+    CorrelationListA[nrow(CorrelationListA)+1,1] <- 'n'
+    CorrelationListA[nrow(CorrelationListA),2:11] <- sapply(X = numListA[2:11],FUN = max)
     #Round & Name  
 
-    is.num <- sapply(CorListA, is.numeric)
+    is.num <- sapply(CorrelationListA, is.numeric)
 
-    CorListB <- cbind(
-      CorListA[,1],
+    CorrelationListB <- cbind(
+      CorrelationListA[,1],
       as.data.frame(
         lapply(
-          CorListA[is.num],
+          CorrelationListA[is.num],
           round,
           2
         )
@@ -349,10 +352,11 @@
     )
 
     #Blank values of negligible size
-    CorListC <- replace(CorListB,CorListB<0.2 & CorListB > -0.2,NA)
+    CorrelationListC <- replace(CorrelationListB,CorrelationListB<0.2 & 
+                                  CorrelationListB > -0.2,NA)
 
 
-    colnames(CorListC) <- c(
+    colnames(CorrelationListC) <- c(
       "Variable", 
       "JerseysA",
       "JerseysB", 
@@ -377,6 +381,6 @@
     setwd('../')
 }# Outermost
 
-write.csv(x = CorListC,file = "Table1.csv")
-write.csv(x = plstSig,file = "Table1Pvals.csv")
+write.csv(x = CorrelationListC,file = "Table5.csv")
+write.csv(x = plstSig,file = "Table5Pvals.csv")
 #P Values - Manually add in stars for the few that are significant.

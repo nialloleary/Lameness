@@ -174,7 +174,7 @@
       )
     )
     
-    locomotion_scoring_event<-1
+  
     
     # Loop start----
     for (locomotion_scoring_event in 1: nrow(meta_data_frame) ) { # Load selected locomotion scoring events

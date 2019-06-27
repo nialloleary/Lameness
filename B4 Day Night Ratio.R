@@ -1,4 +1,4 @@
-#This is script 3 of the scripts for the lameness studies. It produces that data required for a section of Paper 1, table 2 - ratio of day to night total summaries of behaviour.
+#This is script 4/5 of the scripts for the lameness studies. It produces that data required for the ratio of Day and night activity of the Behavior paper, it is the second table not presented in the paper due to non significant results. - total summaries of behaviour.
 
 #The script is the same as script 2 up until about line 140 
 #Start-----
@@ -13,14 +13,14 @@
 		library("Hmisc")
 
 
-		# Meta Table ----
-		# This table contains the meta data for locomotion scoring event required to run the script. 
+		# meta_data_frame Table ----
+		# This table contains the meta_data_frame data for locomotion scoring event required to run the script. 
 		# This facilitate same script being applied to each data set. 
 		# Only these variables should change between locmotion scoring events. 
-		# The Selected row corresponds to the locomotion scoring event (lse). 
+		# The Selected row corresponds to the locomotion scoring event (locomotion_scoring_event). 
 		# In the script, then the item from that row is called. 
  
-		MVars <- c( #Meta variables "Feature path",
+		meta_column_names <- c( #meta_data_frame variables "Feature path",
 			"Folder", 
 			"SerialStart",
 			"SerialEnd",
@@ -28,14 +28,14 @@
 			"LocoName", 
 			"Loco_Index",
 			"ExclCow",
-			"Excl2",
-			"Excl3",
-			"ExclCosws4",
+			"ExclCows2",
+			"ExclCows3",
+			"ExclCows4",
 			"ExclCows5",
 			"ExclCows6",
 			"ExclCows7",
 			"JoinBy", 
-			"LSE"
+			"locomotion_scoring_event"
 		)
  
 		#Jersey trial - First scoring (a) 
@@ -161,8 +161,8 @@
 			"Ped"
 		)# out by a day SN00018D79
         
-		#LSE selection (Locomotion scoring event)
-		Meta <- rbind.data.frame(
+		#locomotion_scoring_event selection (Locomotion scoring event)
+		meta_data_frame_data_frame <- rbind.data.frame(
 			ja, 
 			jb,
 			BW17, 
@@ -171,7 +171,7 @@
 			Farma, 
 			Farmb
 		)
-		Meta$LSE <- c(
+		meta_data_frame_data_frame$locomotion_scoring_event <- c(
 			"1.aJerseys", 
 			"1.bJerseys",
 			"2.BW17", 
@@ -180,36 +180,36 @@
 			"4.aFarma", 
 			"4.bFarmb"
 		)
-		colnames(Meta) <- MVars
+		colnames(meta_data_frame_data_frame) <- meta_column_names
 		 
 		#Initialise lists to store results from each cohort
 		#All needed?
-		CorList <- numList <- pList <- SumDataList <- MRatioList <- VRatioList <- vector(
+		CorrelationList <- numList <- pList <- SumDataList <- MRatioList <- VRatioList <- vector(
 			mode ="list" ,
 			(
-			 nrow(Meta)+3
+			 nrow(meta_data_frame_data_frame)+3
 			)
 		)
  
 		#Loop start----
-		for (lse in 1:nrow(Meta)) { # Load selected locomotion scoring events
-			print(c("Locomotion Scoring Event",lse))
+		for (locomotion_scoring_event in 1:nrow(meta_data_frame_data_frame)) { # Load selected locomotion scoring events
+			print(c("Locomotion Scoring Event",locomotion_scoring_event))
 			setwd(home) 
-			setwd(as.character(Meta$Folder[[lse]]))
+			setwd(as.character(meta_data_frame_data_frame$Folder[[locomotion_scoring_event]]))
 			setwd("./1Hourly")
 			inde<-dir() # Index of file names 
 			inde2<-substr(
 			 inde,
-			 start = paste(Meta$SerialStart[[lse]]),
-			 stop= paste(Meta$SerialEnd[[lse]])
+			 start = paste(meta_data_frame_data_frame$SerialStart[[locomotion_scoring_event]]),
+			 stop= paste(meta_data_frame_data_frame$SerialEnd[[locomotion_scoring_event]])
 			) # Pedometer Serial numbers
 			Results3 <- cbind.data.frame(inde,inde2)
 			colnames(Results3) <- c("inde","UNITID")
 			#Excluded Records----
-			# If you want to exclude 12 &13 you exclude 12 twice (13 goes to 12th position). if 12 and 14, 12 and 13 (14 goes to 13).
-			#names(Meta)   
+		
+			#names(meta_data_frame_data_frame)   
 			for (m in 7:13){ 
-				Exclude<- as.numeric(paste0(Meta[lse,m]))
+				Exclude<- as.numeric(paste0(meta_data_frame[locomotion_scoring_event,m]))
 				Results3<-Results3[-Exclude,]
 			}
 			#Locomotion Scores and Reference table----
@@ -224,12 +224,13 @@
 				sep = ",",
 				header = T
 			)# 
-			NUM <-as.numeric(paste0(Meta$Loco_Index[[lse]])) # Column with relevant loco score for this 
+			NUM <-as.numeric(paste0(
+			  meta_data_frame$Loco_Index[[locomotion_scoring_event]])) # Column with relevant loco score for this 
 			Score$loco2<-Score[,NUM] 
 			Ref <- left_join(
 				Score,
 				Ref1,
-				paste0(Meta$JoinBy[[lse]])
+				paste0(meta_data_frame$JoinBy[[locomotion_scoring_event]])
 			)
 			Results2 <- left_join(
 				Results3,
@@ -267,7 +268,7 @@
 					start = 1,
 					stop = 2
 				)
-				RWconvert <- RWconvert %>% filter(Date==paste(Meta$Date[[lse]])) #Chosen day
+				RWconvert <- RWconvert %>% filter(Date==paste(meta_data_frame$Date[[locomotion_scoring_event]])) #Chosen day
 
 				RWconvert$Hour<-as.numeric(
 					substr(
@@ -303,13 +304,13 @@
 				MRatio <- cbind.data.frame(DayResM[,1],MRatio)
 				MRatio <- left_join(Results, MRatio, "UNITID")
 				MRatio <- MRatio[,c(-1,-2)]
-				MRatioList[lse] <- MRatio
+				MRatioList[locomotion_scoring_event] <- MRatio
 				
 				VRatio <- DayResV[,2:ncol(DayResV)]/NightResV[,2:ncol(DayResV)]
 				VRatio <- cbind.data.frame(DayResV[,1],VRatio)
 				VRatio <- left_join(Results, VRatio, "UNITID")
 				VRatio <- VRatio[,c(-1,-2)]
-				VRatioList[lse] <- VRatio
+				VRatioList[locomotion_scoring_event] <- VRatio
 				
 				#Variable Select----
 				
@@ -322,27 +323,27 @@
 				
 				#r
 				DFCor <- rownames_to_column(as.data.frame(CorMat[1]))
-				CorList[[lse]] <- as.data.frame(DFCor[,1:2])
+				CorrelationList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
 				
 				#n - values
 				DFCor <- rownames_to_column(as.data.frame(CorMat[2]))
-				numList[[lse]] <- as.data.frame(DFCor[,1:2])
+				numList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
 				
 				#p-values
 				DFCor <- rownames_to_column(as.data.frame(CorMat[3]))
-				pList[[lse]] <- as.data.frame(DFCor[,1:2])
+				pList[[locomotion_scoring_event]] <- as.data.frame(DFCor[,1:2])
 				
-				print("LSE")
-				print(lse)
+				print("locomotion_scoring_event")
+				print(locomotion_scoring_event)
 			}
 		}
 
 		#Results begin ----
 		#Combine key columns from the lists created above into summary table
-		CorListA <- as.data.frame(CorList[1])
+		CorrelationListA <- as.data.frame(CorrelationList[1])
 		for (i in 2:7){
-			CorListA<-left_join(CorListA,as.data.frame(CorList[[i]]),"rowname")
-			#colnames(CorListA)[ncol(CorListA)]<-ncol(CorListA)-1 
+			CorrelationListA<-left_join(CorrelationListA,as.data.frame(CorrelationList[[i]]),"rowname")
+			#colnames(CorrelationListA)[ncol(CorrelationListA)]<-ncol(CorrelationListA)-1 
 		}
 		#P-value summary table ----
 		pListA<-as.data.frame(pList[1])
@@ -355,16 +356,17 @@
 
 		pListA$AveragePVal <- rowMeans(pListA[,2:8])
 		  
-		CorListA$AverageAbsoluteCorrelation <- rowMeans(CorListA[,2:8])
-		CorListA$SqrAverageAbsoluteCorrelation <- sqrt(CorListA$AverageAbsoluteCorrelation*CorListA$AverageAbsoluteCorrelation)
-		is.num <- sapply(CorListA, is.numeric)
+		CorrelationListA$AverageAbsoluteCorrelation <- rowMeans(CorrelationListA[,2:8])
+		CorrelationListA$SqrAverageAbsoluteCorrelation <- sqrt(
+		  CorrelationListA$AverageAbsoluteCorrelation*CorrelationListA$AverageAbsoluteCorrelation)
+		is.num <- sapply(CorrelationListA, is.numeric)
 
-		CorListB <- cbind(CorListA[,1],as.data.frame(lapply(CorListA[is.num],round,2)))
+		CorrelationListB <- cbind(CorrelationListA[,1],as.data.frame(lapply(CorrelationListA[is.num],round,2)))
 
 		#Blank values of negligible size
-		CorListC <- replace(CorListB,CorListB<0.2 & CorListB > -0.2,NA)
+		CorrelationListC <- replace(CorrelationListB,CorrelationListB<0.2 & CorrelationListB > -0.2,NA)
 
-		colnames(CorListC) <- c("Variable", "JerseysA","JerseysB", 
+		colnames(CorrelationListC) <- c("Variable", "JerseysA","JerseysB", 
 		"BW17", "BW18A","BW18B","FarmA", "FarmB", "Jersey Change","BW18 Change")
 
 		plstSig <- pListA
@@ -377,6 +379,6 @@
 }
 # Outermost
 
-write.csv(x = CorListC,file = "Tablex1Not in Paper.csv")
-write.csv(x = plstSig,file = "Table1xPvals.csv")
+write.csv(x = CorrelationListC,file = "TableNot in Paper2.csv")
+write.csv(x = plstSig,file = "TablePvalsNot in Paper2.csv")
 #P Values - Manually add in stars for the few that are significant.
