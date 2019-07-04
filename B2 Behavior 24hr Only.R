@@ -371,7 +371,7 @@
       "Average Cor",
       "Av Change Cor"
     )
-
+    summary_table_5 <- CorrelationListC[order(CorrelationListC$Variable,decreasing = F),]
     plstSig <- pListA
     plstSig[pListA>0.2] <- NA
     plstSig$rowname <- pListA$rowname
@@ -381,6 +381,6 @@
     setwd('../')
 }# Outermost
 
-write.csv(x = CorrelationListC,file = "Table5.csv")
+write.csv(x = summary_table_5,file = "Table5.csv")
 write.csv(x = plstSig,file = "Table5Pvals.csv")
 #P Values - Manually add in stars for the few that are significant.
