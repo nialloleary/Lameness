@@ -1,5 +1,5 @@
 # This is script 2/5 the scripts for the behavior studies. 
-# It produces that data required for table 5 of Paper 1 - 24 hour summaries of behaviour. 
+# It produces that data required for table 4 of Paper 1 - 24 hour summaries of behaviour correlation to mobility score. 
 
 # Start-----
 { 
@@ -371,7 +371,7 @@
       "Average Cor",
       "Av Change Cor"
     )
-    summary_table_5 <- CorrelationListC[order(CorrelationListC$Variable,decreasing = F),]
+    summary_table_4 <- CorrelationListC[order(CorrelationListC$Variable,decreasing = F),]
     plstSig <- pListA
     plstSig[pListA>0.2] <- NA
     plstSig$rowname <- pListA$rowname
@@ -381,6 +381,6 @@
     setwd('../')
 }# Outermost
 
-write.csv(x = summary_table_5,file = "Table5.csv")
+write.csv(x = summary_table_4,file = "Table4.csv")
 write.csv(x = plstSig,file = "Table5Pvals.csv")
 #P Values - Manually add in stars for the few that are significant.
