@@ -1,4 +1,4 @@
-#This is script 1 of the scripts for the lameness studies. It produces that data required for the summary data, Table 4. 
+#This is script 1 of the scripts for the lameness studies. It produces the summary data found in Table 3. 
 
 { 
   { 
@@ -22,7 +22,7 @@
       "WATCHSTART",
       "Feature path",
       "Loco_Index",
-      "ExclCow",
+      "ExclCow", #excluded cows
       "ExclCow2",
       "ExclCow3",
       "ExclCowsws4",
@@ -365,14 +365,14 @@
     "4.b Farm Var"
   )
   
-  summary_table_4 <- summary_table_2[order(summary_table_2$Variable,decreasing = F),]
+  summary_table_3 <- summary_table_2[order(summary_table_2$Variable,decreasing = F),]
   # Write Behaviour correlation Table
   setwd("../")
   setwd("../")
 }
 # Outermost
 
-write.csv(x = summary_table_4,file = "Table4_24hr_Summary.csv")
+write.csv(x = summary_table_3,file = "Table3_24hr_Summary.csv")
 
 #P Values - Manually add in stars for the few that are significant.
 
