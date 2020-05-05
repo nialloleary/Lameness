@@ -3,7 +3,7 @@
 #???? What is different about my implementation of steps to Haladjian's?
 
 #The right is the most robust as doesn't impact the leg with the sensor?
-# save.image("D:/Lameness/Halad Enviro 030319.RData")
+
 
 #Setup----
 {
@@ -59,7 +59,9 @@ walk$strike<-(walk$x==walk$xmin) # step nadir found = local minimum
 
 ### Consistent walking----
 
-#The objective is to identify when the cow is walking for an extended period as this is when manual locomotion scorers can discern if a cow is lame or not. Alternatively - exclude When the cow is standing or moving slowly (relative to itself) or walking intermittently 
+#The objective is to identify when the cow is walking for an extended period as this is 
+    #when manual locomotion scorers can discern if a cow is lame or not.
+    #Alternatively - exclude When the cow is standing or moving slowly (relative to itself) or walking intermittently 
 #To do this we ascertain the maximum recorded accelertion over 20 seconds and create a vector with this rolling max
 
 walk$x2mean<-roll_mean(x =walk$x2,n = 2000,
